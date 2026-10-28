@@ -115,4 +115,25 @@ public class SalaController {
         autoReinicio.playFromStart();   // la sala se reinicia sola para el siguiente grupo
     }
 
+    private void temblar(Node nodo) {
+        TranslateTransition t = new TranslateTransition(Duration.millis(50), nodo);
+        t.setFromX(-8); t.setToX(8);
+        t.setCycleCount(6); t.setAutoReverse(true);
+        t.setOnFinished(e -> nodo.setTranslateX(0));
+        t.play();
+    }
+
+    private void efecto(String archivo) {
+        new AudioClip(recurso("sonidos/" + archivo)).play();
+    }
+
+    private String recurso(String ruta) {
+        // Si sale NullPointerException aqui: el archivo no esta en resources o el nombre no coincide
+        return getClass().getResource(ruta).toExternalForm();
+    }
+
+    public void detener() {
+        ambiente.stop();
+    }
+
 }
