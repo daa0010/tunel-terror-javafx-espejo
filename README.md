@@ -1,1 +1,1 @@
-todo lo ha hecho Laura, sin ella nada de esto sería posible
+todo lo ha hecho Laura y Marta, sin ellas nada de esto sería posible
