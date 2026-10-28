@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane fx:id="panelPrincipal" prefHeight="720.0" prefWidth="1280.0"
+           stylesheets="@css/estilos.css"
+           xmlns="http://javafx.com/javafx/21"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="es.medac.espejo.tunel.SalaController">
+
+    <!-- Capa de interacción y acertijo -->
+    <VBox alignment="CENTER" spacing="25.0">
+        <padding>
+            <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+        </padding>
+
+        <Label fx:id="lblTemporizador" styleClass="temporizador" text="01:00" />
+
+        <Label styleClass="titulo-terror" text="EL ESPEJO DE LA PENITENCIA" />
+
+        <Label fx:id="lblPista" styleClass="texto-pista"
+               text="Mira fijamente al reflejo. Lo que buscas está invertido en tu mente."
+               wrapText="true" />
+
+        <TextField fx:id="txtCodigo" maxWidth="320.0" promptText="Introduce la palabra..."
+                   styleClass="input-codigo" />
+
+        <Button fx:id="btnComprobar" onAction="#comprobarSolucion"
+                styleClass="boton-pesadilla" text="ATRAVESAR EL CRISTAL" />
+
+        <Label fx:id="lblMensaje" styleClass="texto-pista" text="" />
+    </VBox>
+
+    <!-- Capa superpuesta para el Jumpscare a pantalla completa -->
+    <ImageView fx:id="imgJumpscare" fitHeight="1080.0" fitWidth="1920.0"
+               preserveRatio="true" visible="false" />
+
+</StackPane>
