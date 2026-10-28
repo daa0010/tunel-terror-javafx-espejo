@@ -83,4 +83,36 @@ public class SalaController {
         silencio.play();
     }
 
+    public void reiniciar() {
+        autoReinicio.stop();
+        txtNumero.clear();
+        txtNumero.setDisable(false);
+        imgSusto.setVisible(false);
+        lblLetra.setVisible(false);
+        lblAyuda.setText("");
+        lblMensaje.setText("Hay alguien detrás de ti en el reflejo. ¿Cuál es su número?");
+        ambiente.play();
+        txtNumero.requestFocus();
+        piedad.playFromStart();
+    }
+
+    private void mostrarAyuda() {
+        lblAyuda.setText("El espejo susurra: tiene " + NUMERO.length() + " cifras y empieza por " + NUMERO.charAt(0));
+    }
+
+    // ---------- Comun a todas las salas ----------
+    private void mostrarLetra() {
+        piedad.stop();
+        lblLetra.setText(LETRA);
+        lblLetra.setVisible(true);
+        ScaleTransition escala = new ScaleTransition(Duration.millis(700), lblLetra);
+        escala.setFromX(0.1); escala.setFromY(0.1);
+        escala.setToX(1); escala.setToY(1);
+        FadeTransition aparicion = new FadeTransition(Duration.millis(700), lblLetra);
+        aparicion.setFromValue(0); aparicion.setToValue(1);
+        new ParallelTransition(escala, aparicion).play();
+        efecto("acierto.wav");
+        autoReinicio.playFromStart();   // la sala se reinicia sola para el siguiente grupo
+    }
+
 }
