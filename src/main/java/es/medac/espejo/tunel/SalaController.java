@@ -58,7 +58,29 @@ public class SalaController {
         }
     }
 
-    public void detener() {
-        ambiente.stop();
+    // Silencio -> aparece la cara de golpe con un grito -> desaparece -> letra
+    private void susto() {
+        txtNumero.setDisable(true);
+        piedad.stop();
+        ambiente.pause();
+        lblMensaje.setText("Ahora... date la vuelta.");
+        PauseTransition silencio = new PauseTransition(Duration.seconds(2));
+        silencio.setOnFinished(e -> {
+            imgSusto.setVisible(true);
+            efecto("grito.wav");
+            ScaleTransition aparece = new ScaleTransition(Duration.millis(250), imgSusto);
+            aparece.setFromX(0.2); aparece.setFromY(0.2);
+            aparece.setToX(1.1); aparece.setToY(1.1);
+            PauseTransition mirada = new PauseTransition(Duration.seconds(2));
+            SequentialTransition todo = new SequentialTransition(aparece, mirada);
+            todo.setOnFinished(ev -> {
+                imgSusto.setVisible(false);
+                ambiente.play();
+                mostrarLetra();
+            });
+            todo.play();
+        });
+        silencio.play();
     }
+
 }
