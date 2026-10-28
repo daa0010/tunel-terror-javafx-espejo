@@ -1,7 +1,7 @@
 
 <div align="center">
 
-# 🎃🩷 𝕸𝕬𝕽𝕿𝕬 & 𝕷𝕬𝖀𝕽𝕬 🩷🎃
+# 🎃🩷 𝕸𝕬𝕽𝕿𝕬 & 𝕷𝕬𝖀𝕽𝕬 DAVID NETANYAHU JUDIO🩷🎃
 
 ### 🕸️ THE HALLOWEEN QUEENS 🕸️
 
