@@ -1,48 +1,64 @@
 package es.medac.espejo.tunel;
 
-import javafx.event.ActionEvent;
+import java.util.*;
+import javafx.animation.*;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.geometry.*;
+import javafx.scene.Node;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
+import javafx.scene.media.*;
+import javafx.scene.shape.*;
+import javafx.util.Duration;
 
 public class SalaController {
 
-    @FXML
-    private StackPane panelPrincipal;
+    private static final String LETRA = "D";
+    private static final String NUMERO = "13";   // pista acordada con 1.º
+
+    @FXML private Rectangle espejo;
+    @FXML private TextField txtNumero;
+    @FXML private ImageView imgSusto;
+    @FXML private Label lblMensaje, lblLetra, lblAyuda;
+
+    private FadeTransition respiracion;
+    private MediaPlayer ambiente;
+    private final PauseTransition piedad = new PauseTransition(Duration.seconds(60));
+    private final PauseTransition autoReinicio = new PauseTransition(Duration.seconds(12));
 
     @FXML
-    private Label lblTemporizador;
-
-    @FXML
-    private Label lblPista;
-
-    @FXML
-    private TextField txtCodigo;
-
-    @FXML
-    private Button btnComprobar;
-
-    @FXML
-    private Label lblMensaje;
-
-    @FXML
-    private ImageView imgJumpscare;
-
-    @FXML
-    public void initialize() {
-        lblMensaje.setText("");
+    private void initialize() {
+        // El espejo "respira": cambia de opacidad muy despacio (nada de destellos)
+        respiracion = new FadeTransition(Duration.seconds(3), espejo);
+        respiracion.setFromValue(0.55);
+        respiracion.setToValue(1.0);
+        respiracion.setAutoReverse(true);
+        respiracion.setCycleCount(Animation.INDEFINITE);
+        respiracion.play();
+        ambiente = new MediaPlayer(new Media(recurso("sonidos/ambiente.mp3")));
+        ambiente.setCycleCount(MediaPlayer.INDEFINITE);
+        ambiente.setVolume(0.4);
+        ambiente.play();
+        piedad.setOnFinished(e -> mostrarAyuda());
+        autoReinicio.setOnFinished(e -> reiniciar());
+        reiniciar();
     }
 
     @FXML
-    private void comprobarSolucion(ActionEvent event) {
-        String texto = txtCodigo.getText().trim();
-        if (texto.isEmpty()) {
-            lblMensaje.setText("El cristal no responde al silencio...");
+    private void comprobar() {
+        if (txtNumero.isDisabled()) return;
+        if (txtNumero.getText().trim().equals(NUMERO)) {
+            susto();
         } else {
-            lblMensaje.setText("Comprobando: " + texto);
+            efecto("fallo.wav");
+            lblMensaje.setText("El espejo no te reconoce...");
+            temblar(espejo);
+            txtNumero.clear();
         }
+    }
+
+    public void detener() {
+        ambiente.stop();
     }
 }
