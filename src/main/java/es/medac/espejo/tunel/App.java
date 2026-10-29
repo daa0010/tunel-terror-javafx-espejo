@@ -8,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 public class App extends Application {
@@ -16,6 +17,11 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+        // Carga de la tipografía de Halloween en memoria
+        try {
+            Font.loadFont(getClass().getResourceAsStream("/es/medac/espejo/tunel/fonts/Creepster-Regular.ttf"), 16);
+        } catch (Exception ignored) {}
+
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/es/medac/espejo/tunel/sala.fxml"));
         Parent root = loader.load();
         SalaController controller = loader.getController();
@@ -30,13 +36,13 @@ public class App extends Application {
                 controller.detener();
                 Platform.exit();
             } else if (event.getCode() == KeyCode.F12) {
-                // Reiniciar todo desde cero
+                // Betatester: Reinicia el juego completo desde cero
                 controller.reiniciar();
             } else if (event.getCode() == KeyCode.F9) {
-                // Modo Betatester: Salto directo al jumpscare ("Cuidado...")
+                // Betatester: Salto directo al jumpscare ("Pasa algo...")
                 controller.testSustoDirecto();
             } else if (event.getCode() == KeyCode.F8) {
-                // Modo Betatester: Saltarse el minijuego del puntero
+                // Betatester: Saltarse el minijuego de seguimiento
                 controller.testSaltarMinijuego();
             }
         });

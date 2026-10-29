@@ -1,5 +1,6 @@
 package es.medac.espejo.tunel;
 
+import java.util.Random;
 import javafx.animation.*;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -15,10 +16,15 @@ import javafx.util.Duration;
 public class SalaController {
 
     private static final String LETRA = "D";
-    private static final String NUMERO = "13"; // Pista acordada
+    private static final String NUMERO = "13";
+    private static final double TIEMPO_OBJETIVO_MINIJUEGO = 10.0;
 
     @FXML private StackPane raiz;
+    @FXML private Region capaAlertaRoja;
     @FXML private Rectangle espejo;
+    @FXML private HBox ojosEspejo;
+    @FXML private Circle pupilaIzquierda;
+    @FXML private Circle pupilaDerecha;
     @FXML private Button btnIniciarJuego;
     @FXML private VBox panelCodigo;
     @FXML private TextField txtNumero;
@@ -31,14 +37,20 @@ public class SalaController {
     private AnimationTimer bucleMinijuego;
     private double ratonX = -100, ratonY = -100;
     private double orbeX = 400, orbeY = 300;
-    private double velX = 140, velY = 110;
+    private double destinoX, destinoY;
+    private double velocidadActual = 180.0;
+    private final Random random = new Random();
+
     private double tiempoSeguido = 0.0;
     private double tiempoFallo = 0.0;
+    private double intensidadAlerta = 0.0;
     private long ultimoTiempoNano = 0;
     private boolean juegoCompletado = false;
+    private int fallosMinijuego = 0;
 
     // Animaciones y multimedia
     private FadeTransition respiracion;
+    private Timeline bucleParpadeo;
     private MediaPlayer ambiente;
     private AudioClip audioFallo;
     private MediaPlayer playerSusto;
@@ -48,12 +60,13 @@ public class SalaController {
 
     @FXML
     private void initialize() {
-        // Carga de audios
+        // Carga de fallo (WAV) y calentamiento de búfer
         audioFallo = new AudioClip(recurso("sonidos/fallo.wav"));
         try {
             audioFallo.play(0.0);
         } catch (Exception ignored) {}
 
+        // Carga de MP3 con MediaPlayer
         Media mediaSusto = new Media(recurso("sonidos/susto.mp3"));
         playerSusto = new MediaPlayer(mediaSusto);
         playerSusto.setOnError(() -> System.err.println("Error en susto.mp3: " + playerSusto.getError()));
@@ -62,7 +75,7 @@ public class SalaController {
         playerAcierto = new MediaPlayer(mediaAcierto);
         playerAcierto.setOnError(() -> System.err.println("Error en acierto.mp3: " + playerAcierto.getError()));
 
-        // Efecto respiración del espejo
+        // Respiración suave del cristal
         respiracion = new FadeTransition(Duration.seconds(3), espejo);
         respiracion.setFromValue(0.55);
         respiracion.setToValue(1.0);
@@ -85,16 +98,72 @@ public class SalaController {
         orbe.setVisible(false);
         panelMinijuego.getChildren().add(orbe);
 
-        // Captura del ratón
+        // Captura del ratón y seguimiento de mirada
         raiz.setOnMouseMoved(e -> {
             ratonX = e.getX();
             ratonY = e.getY();
+            actualizarMiradaOjos(ratonX, ratonY);
         });
 
         configurarBucleMinijuego();
+        iniciarParpadeo();
 
         autoReinicio.setOnFinished(e -> reiniciar());
         reiniciar();
+    }
+
+    private void actualizarMiradaOjos(double x, double y) {
+        if (pupilaIzquierda == null || pupilaDerecha == null || raiz == null) return;
+
+        double centroX = raiz.getWidth() / 2.0;
+        double centroY = (raiz.getHeight() / 2.0) - 110.0;
+
+        double dx = x - centroX;
+        double dy = y - centroY;
+        double distancia = Math.hypot(dx, dy);
+
+        double limiteDesplazamiento = 11.0;
+
+        if (distancia > 0) {
+            double factor = Math.min(distancia / 350.0, 1.0) * limiteDesplazamiento;
+            double offsetX = (dx / distancia) * factor;
+            double offsetY = (dy / distancia) * (factor * 0.5);
+
+            pupilaIzquierda.setTranslateX(offsetX);
+            pupilaIzquierda.setTranslateY(offsetY);
+
+            pupilaDerecha.setTranslateX(offsetX);
+            pupilaDerecha.setTranslateY(offsetY);
+        }
+    }
+
+    private void iniciarParpadeo() {
+        bucleParpadeo = new Timeline(new KeyFrame(Duration.seconds(4.8), e -> {
+            ScaleTransition parpadeo = new ScaleTransition(Duration.millis(110), ojosEspejo);
+            parpadeo.setFromY(1.0);
+            parpadeo.setToY(0.04);
+            parpadeo.setAutoReverse(true);
+            parpadeo.setCycleCount(2);
+            parpadeo.play();
+        }));
+        bucleParpadeo.setCycleCount(Animation.INDEFINITE);
+        bucleParpadeo.play();
+    }
+
+    private void generarNuevoDestino(double ancho, double alto) {
+        double minX = 90;
+        double maxX = Math.max(minX + 120, ancho - 90);
+        double minY = 90;
+        double maxY = Math.max(minY + 120, alto - 90);
+
+        if (orbeY > alto * 0.5) {
+            destinoY = minY + random.nextDouble() * ((alto * 0.42) - minY);
+        } else {
+            destinoY = (alto * 0.58) + random.nextDouble() * (maxY - (alto * 0.58));
+        }
+
+        destinoX = minX + random.nextDouble() * (maxX - minX);
+        velocidadActual = 160.0 + random.nextDouble() * 100.0;
     }
 
     private void configurarBucleMinijuego() {
@@ -112,50 +181,100 @@ public class SalaController {
                 double alto = raiz.getHeight() > 0 ? raiz.getHeight() : 720;
                 double radio = orbe.getRadius();
 
-                orbeX += velX * dt;
-                orbeY += velY * dt;
+                double dx = destinoX - orbeX;
+                double dy = destinoY - orbeY;
+                double distDestino = Math.hypot(dx, dy);
 
-                if (orbeX - radio <= 40 || orbeX + radio >= ancho - 40) {
-                    velX = -velX;
+                if (distDestino < 25.0) {
+                    generarNuevoDestino(ancho, alto);
+                } else {
+                    orbeX += (dx / distDestino) * velocidadActual * dt;
+                    orbeY += (dy / distDestino) * velocidadActual * dt;
                 }
-                if (orbeY - radio <= 40 || orbeY + radio >= alto - 40) {
-                    velY = -velY;
-                }
+
+                orbeX = Math.max(radio + 30, Math.min(ancho - radio - 30, orbeX));
+                orbeY = Math.max(radio + 30, Math.min(alto - radio - 30, orbeY));
 
                 orbe.setCenterX(orbeX);
                 orbe.setCenterY(orbeY);
 
-                // Detección de proximidad del ratón
-                double dist = Math.hypot(ratonX - orbeX, ratonY - orbeY);
-                boolean sobreOrbe = dist <= (radio + 25);
+                double distRaton = Math.hypot(ratonX - orbeX, ratonY - orbeY);
+                boolean sobreOrbe = distRaton <= (radio + 25);
 
                 if (sobreOrbe) {
                     tiempoSeguido += dt;
                     tiempoFallo = 0.0;
                     orbe.setFill(Color.web("#ff2222", 0.85));
                     lblMensaje.setText("Sigue la presencia con tu reflejo...");
+                    intensidadAlerta = Math.max(0.0, intensidadAlerta - dt * 2.8);
                 } else {
                     tiempoFallo += dt;
                     orbe.setFill(Color.web("#8b0000", 0.5));
                     lblMensaje.setText("Acompaña el punto con el ratón");
+                    intensidadAlerta = Math.min(1.0, tiempoFallo / 3.0);
 
-                    // Tolerancia de 2 segundos: si se excede, se reinicia el progreso desde cero
-                    if (tiempoFallo > 2.0 && tiempoSeguido > 0.0) {
-                        tiempoSeguido = 0.0;
-                        temblar(espejo);
+                    if (tiempoFallo >= 3.0) {
+                        fallarMinijuego();
+                        return;
                     }
                 }
 
-                // Superar los 12 segundos
-                if (tiempoSeguido >= 12.0) {
+                capaAlertaRoja.setOpacity(intensidadAlerta);
+
+                double progreso = Math.min(1.0, tiempoSeguido / TIEMPO_OBJETIVO_MINIJUEGO);
+                double escalaOjos = 1.0 + (progreso * 0.70);
+                ojosEspejo.setScaleX(escalaOjos);
+                ojosEspejo.setScaleY(escalaOjos);
+
+                if (tiempoSeguido >= TIEMPO_OBJETIVO_MINIJUEGO) {
                     finalizarMinijuego();
                 }
             }
         };
     }
 
+    private void resetearOjosYEfectos() {
+        if (ojosEspejo != null) {
+            ojosEspejo.setScaleX(1.0);
+            ojosEspejo.setScaleY(1.0);
+        }
+        if (capaAlertaRoja != null) {
+            capaAlertaRoja.setOpacity(0.0);
+        }
+        intensidadAlerta = 0.0;
+    }
+
+    private void fallarMinijuego() {
+        if (bucleMinijuego != null) bucleMinijuego.stop();
+        orbe.setVisible(false);
+        tiempoSeguido = 0.0;
+        tiempoFallo = 0.0;
+
+        resetearOjosYEfectos();
+
+        temblar(espejo);
+        audioFallo.play();
+
+        fallosMinijuego++;
+
+        if (fallosMinijuego >= 4) {
+            finalizarMinijuego();
+        } else {
+            lblMensaje.setText("Has perdido el rastro...\nPulsa para volver a intentarlo.");
+            btnIniciarJuego.setText("Volver a intentar");
+            btnIniciarJuego.setVisible(true);
+            btnIniciarJuego.setManaged(true);
+        }
+    }
+
     @FXML
     public void empezarMinijuego() {
+        // Si la letra ya está visible, el botón actúa reiniciando la sala
+        if (lblLetra != null && lblLetra.isVisible()) {
+            reiniciar();
+            return;
+        }
+
         btnIniciarJuego.setVisible(false);
         btnIniciarJuego.setManaged(false);
         iniciarMinijuego();
@@ -168,9 +287,24 @@ public class SalaController {
         ultimoTiempoNano = 0;
         panelCodigo.setVisible(false);
         panelCodigo.setManaged(false);
+
+        resetearOjosYEfectos();
+
+        if (ratonX > 0 && ratonY > 0) {
+            orbeX = ratonX;
+            orbeY = ratonY;
+        } else {
+            orbeX = raiz.getWidth() > 0 ? raiz.getWidth() / 2.0 : 400;
+            orbeY = raiz.getHeight() > 0 ? raiz.getHeight() / 2.0 : 300;
+        }
+        orbe.setCenterX(orbeX);
+        orbe.setCenterY(orbeY);
         orbe.setVisible(true);
-        orbeX = 400;
-        orbeY = 300;
+
+        double ancho = raiz.getWidth() > 0 ? raiz.getWidth() : 1280;
+        double alto = raiz.getHeight() > 0 ? raiz.getHeight() : 720;
+        generarNuevoDestino(ancho, alto);
+
         bucleMinijuego.start();
     }
 
@@ -180,6 +314,8 @@ public class SalaController {
         orbe.setVisible(false);
         btnIniciarJuego.setVisible(false);
         btnIniciarJuego.setManaged(false);
+
+        if (capaAlertaRoja != null) capaAlertaRoja.setOpacity(0.0);
 
         lblMensaje.setText("Parece que hay alguien detrás de ti. Quizá sepa algo...");
         panelCodigo.setVisible(true);
@@ -201,27 +337,28 @@ public class SalaController {
         }
     }
 
-    // Jumpscare
     public void susto() {
         txtNumero.setDisable(true);
+        panelCodigo.setVisible(false);
+        panelCodigo.setManaged(false);
+
         ambiente.pause();
         lblMensaje.setText("Pasa algo...");
 
         PauseTransition silencio = new PauseTransition(Duration.seconds(1.8));
         silencio.setOnFinished(e -> {
+            if (ojosEspejo != null) ojosEspejo.setVisible(false);
             imgSusto.setVisible(true);
 
             playerSusto.seek(Duration.ZERO);
             playerSusto.play();
 
-            // Zoom inicial de choque
             ScaleTransition impacto = new ScaleTransition(Duration.millis(70), imgSusto);
             impacto.setFromX(0.8);
             impacto.setFromY(0.8);
             impacto.setToX(1.35);
             impacto.setToY(1.35);
 
-            // Sacudida violenta sostenida
             TranslateTransition convulsion = new TranslateTransition(Duration.millis(35), imgSusto);
             convulsion.setByX(25);
             convulsion.setByY(15);
@@ -249,8 +386,6 @@ public class SalaController {
         silencio.play();
     }
 
-    // --- MÉTODOS DE BETATESTER Y CONTROL ---
-
     public void reiniciar() {
         autoReinicio.stop();
         if (bucleMinijuego != null) bucleMinijuego.stop();
@@ -258,10 +393,15 @@ public class SalaController {
         if (playerAcierto != null) playerAcierto.stop();
 
         juegoCompletado = false;
+        fallosMinijuego = 0;
         orbe.setVisible(false);
         imgSusto.setVisible(false);
         lblLetra.setVisible(false);
+        if (ojosEspejo != null) ojosEspejo.setVisible(true);
 
+        resetearOjosYEfectos();
+
+        btnIniciarJuego.setText("Iniciar invocación");
         btnIniciarJuego.setVisible(true);
         btnIniciarJuego.setManaged(true);
 
@@ -271,7 +411,7 @@ public class SalaController {
         txtNumero.clear();
         txtNumero.setDisable(false);
 
-        lblMensaje.setText("El reflejo está inquieto. Concéntrate para invocar la presencia.");
+        lblMensaje.setText("El reflejo está inquieto. Pulsa el botón para invocar la presencia.");
         ambiente.play();
     }
 
@@ -291,6 +431,9 @@ public class SalaController {
     }
 
     private void mostrarLetra() {
+        panelCodigo.setVisible(false);
+        panelCodigo.setManaged(false);
+
         lblLetra.setText(LETRA);
         lblLetra.setVisible(true);
         ScaleTransition escala = new ScaleTransition(Duration.millis(700), lblLetra);
@@ -302,6 +445,11 @@ public class SalaController {
 
         playerAcierto.seek(Duration.ZERO);
         playerAcierto.play();
+
+        // Botón visible con texto de reinicio manual
+        btnIniciarJuego.setText("Reiniciar sala");
+        btnIniciarJuego.setVisible(true);
+        btnIniciarJuego.setManaged(true);
 
         autoReinicio.playFromStart();
     }
@@ -320,6 +468,7 @@ public class SalaController {
 
     public void detener() {
         if (bucleMinijuego != null) bucleMinijuego.stop();
+        if (bucleParpadeo != null) bucleParpadeo.stop();
         if (ambiente != null) ambiente.stop();
         if (playerSusto != null) playerSusto.stop();
         if (playerAcierto != null) playerAcierto.stop();
