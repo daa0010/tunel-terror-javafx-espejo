@@ -1,6 +1,7 @@
 package es.medac.espejo.tunel;
 
 import java.util.Random;
+import java.util.Set;
 import javafx.animation.*;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -16,7 +17,8 @@ import javafx.util.Duration;
 public class SalaController {
 
     private static final String LETRA = "D";
-    private static final String NUMERO = "13";
+    // Conjunto de opciones válidas simétricas
+    private static final Set<String> NUMEROS_VALIDOS = Set.of("0", "1", "8");
     private static final double TIEMPO_OBJETIVO_MINIJUEGO = 10.0;
 
     @FXML private StackPane raiz;
@@ -60,13 +62,11 @@ public class SalaController {
 
     @FXML
     private void initialize() {
-        // Carga de fallo (WAV) y calentamiento de búfer
         audioFallo = new AudioClip(recurso("sonidos/fallo.wav"));
         try {
             audioFallo.play(0.0);
         } catch (Exception ignored) {}
 
-        // Carga de MP3 con MediaPlayer
         Media mediaSusto = new Media(recurso("sonidos/susto.mp3"));
         playerSusto = new MediaPlayer(mediaSusto);
         playerSusto.setOnError(() -> System.err.println("Error en susto.mp3: " + playerSusto.getError()));
@@ -75,7 +75,6 @@ public class SalaController {
         playerAcierto = new MediaPlayer(mediaAcierto);
         playerAcierto.setOnError(() -> System.err.println("Error en acierto.mp3: " + playerAcierto.getError()));
 
-        // Respiración suave del cristal
         respiracion = new FadeTransition(Duration.seconds(3), espejo);
         respiracion.setFromValue(0.55);
         respiracion.setToValue(1.0);
@@ -83,13 +82,11 @@ public class SalaController {
         respiracion.setCycleCount(Animation.INDEFINITE);
         respiracion.play();
 
-        // Audio ambiental
         ambiente = new MediaPlayer(new Media(recurso("sonidos/ambiente.mp3")));
         ambiente.setCycleCount(MediaPlayer.INDEFINITE);
         ambiente.setVolume(0.3);
         ambiente.play();
 
-        // Configuración visual del orbe
         orbe = new Circle(32);
         orbe.setFill(Color.web("#8b0000", 0.6));
         orbe.setStroke(Color.web("#ff3333"));
@@ -98,7 +95,6 @@ public class SalaController {
         orbe.setVisible(false);
         panelMinijuego.getChildren().add(orbe);
 
-        // Captura del ratón y seguimiento de mirada
         raiz.setOnMouseMoved(e -> {
             ratonX = e.getX();
             ratonY = e.getY();
@@ -205,7 +201,7 @@ public class SalaController {
                     tiempoSeguido += dt;
                     tiempoFallo = 0.0;
                     orbe.setFill(Color.web("#ff2222", 0.85));
-                    lblMensaje.setText("Sigue la presencia con tu reflejo...");
+                    lblMensaje.setText("Sigue a la presencia con tu reflejo...");
                     intensidadAlerta = Math.max(0.0, intensidadAlerta - dt * 2.8);
                 } else {
                     tiempoFallo += dt;
@@ -269,7 +265,6 @@ public class SalaController {
 
     @FXML
     public void empezarMinijuego() {
-        // Si la letra ya está visible, el botón actúa reiniciando la sala
         if (lblLetra != null && lblLetra.isVisible()) {
             reiniciar();
             return;
@@ -317,7 +312,8 @@ public class SalaController {
 
         if (capaAlertaRoja != null) capaAlertaRoja.setOpacity(0.0);
 
-        lblMensaje.setText("¿Con cuántos años morí? Hay alguien detrás de ti. Quizá sepa algo...");
+        lblMensaje.setText("Ante mi presencia permanece inmutable. \nParece que hay alguien detrás de ti. Quizá sepa algo...");
+
         panelCodigo.setVisible(true);
         panelCodigo.setManaged(true);
         txtNumero.requestFocus();
@@ -327,7 +323,8 @@ public class SalaController {
     private void comprobar() {
         if (!juegoCompletado || txtNumero.isDisabled()) return;
 
-        if (txtNumero.getText().trim().equals(NUMERO)) {
+        String entrada = txtNumero.getText().trim();
+        if (NUMEROS_VALIDOS.contains(entrada)) {
             susto();
         } else {
             audioFallo.play();
@@ -343,9 +340,10 @@ public class SalaController {
         panelCodigo.setManaged(false);
 
         ambiente.pause();
-        lblMensaje.setText("Pasa algo...");
+        lblMensaje.setText("");
 
-        PauseTransition silencio = new PauseTransition(Duration.seconds(1.8));
+        // Retardo mínimo (200 ms) para un susto casi instantáneo al pulsar
+        PauseTransition silencio = new PauseTransition(Duration.millis(200));
         silencio.setOnFinished(e -> {
             if (ojosEspejo != null) ojosEspejo.setVisible(false);
             imgSusto.setVisible(true);
@@ -411,7 +409,7 @@ public class SalaController {
         txtNumero.clear();
         txtNumero.setDisable(false);
 
-        lblMensaje.setText("El reflejo está inquieto. Pulsa el botón para invocar la presencia.");
+        lblMensaje.setText("El reflejo está inquieto. Pulsa el botón para invocar a la presencia.");
         ambiente.play();
     }
 
@@ -434,6 +432,9 @@ public class SalaController {
         panelCodigo.setVisible(false);
         panelCodigo.setManaged(false);
 
+        // Se elimina el texto "Pasa algo..." del cristal al revelar la letra
+        lblMensaje.setText("");
+
         lblLetra.setText(LETRA);
         lblLetra.setVisible(true);
         ScaleTransition escala = new ScaleTransition(Duration.millis(700), lblLetra);
@@ -446,7 +447,6 @@ public class SalaController {
         playerAcierto.seek(Duration.ZERO);
         playerAcierto.play();
 
-        // Botón visible con texto de reinicio manual
         btnIniciarJuego.setText("Reiniciar sala");
         btnIniciarJuego.setVisible(true);
         btnIniciarJuego.setManaged(true);

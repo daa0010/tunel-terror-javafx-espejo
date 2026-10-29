@@ -57,7 +57,7 @@
 
         <!-- Contenedor del código: oculto hasta completar el minijuego -->
         <VBox fx:id="panelCodigo" alignment="CENTER" spacing="15" visible="false" managed="false">
-            <TextField fx:id="txtNumero" promptText="Introduce el número" maxWidth="310" onAction="#comprobar"/>
+            <TextField fx:id="txtNumero" promptText="Introduce un número" maxWidth="310" onAction="#comprobar"/>
             <Button text="Responder" onAction="#comprobar"/>
         </VBox>
     </VBox>
