@@ -22,7 +22,7 @@ public class App extends Application {
 
         Scene scene = new Scene(root);
 
-        // Atajo: Ctrl + Shift + Q para salir
+        // Atajo: Ctrl + Shift + Q para salir limpiamente
         KeyCombination comboCerrar = new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
 
         scene.setOnKeyPressed(event -> {
@@ -30,7 +30,14 @@ public class App extends Application {
                 controller.detener();
                 Platform.exit();
             } else if (event.getCode() == KeyCode.F12) {
+                // Reiniciar todo desde cero
                 controller.reiniciar();
+            } else if (event.getCode() == KeyCode.F9) {
+                // Modo Betatester: Salto directo al jumpscare ("Cuidado...")
+                controller.testSustoDirecto();
+            } else if (event.getCode() == KeyCode.F8) {
+                // Modo Betatester: Saltarse el minijuego del puntero
+                controller.testSaltarMinijuego();
             }
         });
 

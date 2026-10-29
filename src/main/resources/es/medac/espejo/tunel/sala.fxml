@@ -9,24 +9,33 @@
 <StackPane fx:id="raiz" styleClass="raiz" stylesheets="@css/estilos.css"
            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="es.medac.espejo.tunel.SalaController">
+
+    <!-- Capa de interacción y acertijo -->
     <VBox alignment="CENTER" spacing="25">
         <Label text="Mírate..." styleClass="titulo"/>
         <StackPane>
             <Rectangle fx:id="espejo" width="380" height="460" arcWidth="200" arcHeight="200" styleClass="espejo"/>
-            <Label fx:id="lblMensaje" styleClass="mensaje-espejo" wrapText="true" maxWidth="300"/>
+            <Label fx:id="lblMensaje" styleClass="mensaje-espejo" wrapText="true" maxWidth="300" alignment="CENTER"/>
         </StackPane>
-        <TextField fx:id="txtNumero" promptText="¿tu número?" maxWidth="220" onAction="#comprobar"/>
-        <Button text="Mirar al espejo" onAction="#comprobar"/>
+
+        <!-- Botón para iniciar el minijuego -->
+        <Button fx:id="btnIniciarJuego" text="Fijar la mirada en el cristal" onAction="#empezarMinijuego" />
+
+        <!-- Contenedor del código: oculto hasta completar el minijuego -->
+        <VBox fx:id="panelCodigo" alignment="CENTER" spacing="15" visible="false" managed="false">
+            <TextField fx:id="txtNumero" promptText="¿tu número?" maxWidth="220" onAction="#comprobar"/>
+            <Button text="Mirar al espejo" onAction="#comprobar"/>
+        </VBox>
     </VBox>
-    <ImageView fx:id="imgSusto" fitHeight="700" preserveRatio="true" visible="false">
+
+    <!-- Capa para el orbe del minijuego -->
+    <Pane fx:id="panelMinijuego" pickOnBounds="false" />
+
+    <!-- Capas de jumpscare y letra -->
+    <ImageView fx:id="imgSusto" fitHeight="800" preserveRatio="true" visible="false">
         <image>
             <Image url="@img/susto.png"/>
         </image>
     </ImageView>
     <Label fx:id="lblLetra" styleClass="letra" visible="false"/>
-    <Label fx:id="lblAyuda" styleClass="ayuda" StackPane.alignment="BOTTOM_CENTER">
-        <StackPane.margin>
-            <Insets bottom="40"/>
-        </StackPane.margin>
-    </Label>
 </StackPane>

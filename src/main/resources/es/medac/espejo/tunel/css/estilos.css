@@ -72,3 +72,11 @@
     -fx-border-color: #8b0000;
     -fx-text-fill: #ffffff;
 }
+
+.mensaje-espejo {
+    -fx-font-family: "Creepster", "Courier New", monospace;
+    -fx-font-size: 22px;
+    -fx-text-fill: #c9d6df;
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+}
