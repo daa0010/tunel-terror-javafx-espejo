@@ -36,10 +36,12 @@ public class SalaController {
         respiracion.setAutoReverse(true);
         respiracion.setCycleCount(Animation.INDEFINITE);
         respiracion.play();
+
         ambiente = new MediaPlayer(new Media(recurso("sonidos/ambiente.mp3")));
         ambiente.setCycleCount(MediaPlayer.INDEFINITE);
         ambiente.setVolume(0.4);
         ambiente.play();
+
         piedad.setOnFinished(e -> mostrarAyuda());
         autoReinicio.setOnFinished(e -> reiniciar());
         reiniciar();
@@ -67,7 +69,7 @@ public class SalaController {
         PauseTransition silencio = new PauseTransition(Duration.seconds(2));
         silencio.setOnFinished(e -> {
             imgSusto.setVisible(true);
-            efecto("grito.wav");
+            efecto("grito.mp3");
             ScaleTransition aparece = new ScaleTransition(Duration.millis(250), imgSusto);
             aparece.setFromX(0.2); aparece.setFromY(0.2);
             aparece.setToX(1.1); aparece.setToY(1.1);
@@ -111,7 +113,7 @@ public class SalaController {
         FadeTransition aparicion = new FadeTransition(Duration.millis(700), lblLetra);
         aparicion.setFromValue(0); aparicion.setToValue(1);
         new ParallelTransition(escala, aparicion).play();
-        efecto("acierto.wav");
+        efecto("acierto.mp3");
         autoReinicio.playFromStart();   // la sala se reinicia sola para el siguiente grupo
     }
 
@@ -133,7 +135,8 @@ public class SalaController {
     }
 
     public void detener() {
-        ambiente.stop();
+        if (ambiente != null) {
+            ambiente.stop();
+        }
     }
-
 }

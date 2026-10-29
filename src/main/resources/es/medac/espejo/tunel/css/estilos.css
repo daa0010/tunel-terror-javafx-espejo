@@ -1,31 +1,63 @@
-/* Raíz de la escena: fondo completamente negro/oscuro */
-.root {
+/* Fondo general de la sala */
+.raiz {
     -fx-background-color: #0b0b0d;
     -fx-font-family: "Courier New", monospace;
 }
 
-/* Títulos y textos principales */
-.titulo-terror {
+/* Título superior */
+.titulo {
     -fx-text-fill: #8b0000;
-    -fx-font-size: 28px;
+    -fx-font-size: 32px;
     -fx-font-weight: bold;
     -fx-effect: dropshadow(gaussian, #ff0000, 10, 0.5, 0, 0);
 }
 
-.texto-pista {
-    -fx-text-fill: #a0a0a0;
-    -fx-font-size: 15px;
+/* Espejo central con degradado y marco metálico */
+.espejo {
+    -fx-fill: radial-gradient(center 50% 40%, radius 70%, #3a4a55, #0a0f12);
+    -fx-stroke: #8b6b2e;
+    -fx-stroke-width: 14;
+    -fx-effect: dropshadow(gaussian, #000000, 40, 0.6, 0, 0);
 }
 
-/* Temporizador */
-.temporizador {
-    -fx-text-fill: #440000;
-    -fx-font-size: 18px;
+/* Texto reflejado en el cristal */
+.mensaje-espejo {
+    -fx-font-family: "Creepster", "Courier New", monospace;
+    -fx-font-size: 22px;
+    -fx-text-fill: #c9d6df;
+    -fx-text-alignment: center;
+}
+
+/* Letra gigante que aparece al resolver el acertijo */
+.letra {
+    -fx-font-size: 160px;
     -fx-font-weight: bold;
+    -fx-text-fill: #8b0000;
+    -fx-effect: dropshadow(gaussian, #ff0000, 25, 0.8, 0, 0);
 }
 
-/* Botones con aspecto desgastado/siniestro */
-.boton-pesadilla {
+/* Texto de ayuda inferior */
+.ayuda {
+    -fx-font-size: 16px;
+    -fx-text-fill: #707070;
+    -fx-font-style: italic;
+}
+
+/* Estilos para el campo de texto y botón */
+.text-field {
+    -fx-background-color: #121215;
+    -fx-text-fill: #e0e0e0;
+    -fx-border-color: #4a4a4a;
+    -fx-border-width: 1px;
+    -fx-font-size: 15px;
+    -fx-alignment: center;
+}
+
+.text-field:focused {
+    -fx-border-color: #8b0000;
+}
+
+.button {
     -fx-background-color: #1a1a1e;
     -fx-text-fill: #cccccc;
     -fx-border-color: #3d0000;
@@ -35,22 +67,8 @@
     -fx-cursor: hand;
 }
 
-.boton-pesadilla:hover {
+.button:hover {
     -fx-background-color: #2b0c0c;
     -fx-border-color: #8b0000;
     -fx-text-fill: #ffffff;
-}
-
-/* Campo de entrada de texto */
-.input-codigo {
-    -fx-background-color: #121215;
-    -fx-text-fill: #e0e0e0;
-    -fx-border-color: #4a4a4a;
-    -fx-border-width: 1px;
-    -fx-font-size: 16px;
-    -fx-alignment: center;
-}
-
-.input-codigo:focused {
-    -fx-border-color: #8b0000;
 }
