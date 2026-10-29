@@ -317,7 +317,7 @@ public class SalaController {
 
         if (capaAlertaRoja != null) capaAlertaRoja.setOpacity(0.0);
 
-        lblMensaje.setText("Parece que hay alguien detrás de ti. Quizá sepa algo...");
+        lblMensaje.setText("¿Con cuantos años morí? Si no aciertas me quedaré con tu alma. Hay alguien detrás de ti. Quizá sepa algo...");
         panelCodigo.setVisible(true);
         panelCodigo.setManaged(true);
         txtNumero.requestFocus();
